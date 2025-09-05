@@ -1,13 +1,72 @@
 {
-  "name": "core-wf",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "mesh-platform-multibot",
+  "version": "2.1.0",
+  "description": "MESH Platform - Modular Bot Framework with Azure OpenAI integration",
+  "main": "src/index.js",
+  "author": "Wfinance MESH Team",
+  "license": "MIT",
+  "keywords": [
+    "microsoft-teams",
+    "bot-framework", 
+    "azure-openai",
+    "multibot",
+    "mesh",
+    "bpo-financial",
+    "modular-architecture"
+  ],
   "scripts": {
-    "start": "node /Users/andrepaiva/Core-Wf/src/bots/mesh/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "dev": "NODE_ENV=development node src/index.js",
+    "production": "NODE_ENV=production node src/index.js",
+    "test": "echo \"Tests not configured yet\" && exit 0",
+    "health-check": "curl -f http://localhost:3978/healthz || exit 1",
+    "logs": "echo 'Use Azure App Service logs or Application Insights'",
+    "deploy": "echo 'Deploy via Azure DevOps, GitHub Actions, or Azure CLI'",
+    "validate-syntax": "node -c src/index.js && node -c src/bots/mesh/MeshBot.js",
+    "debug": "NODE_ENV=development ENABLE_DEBUG_LOGS=true node src/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "dependencies": {
+    "@azure/identity": "^4.11.1",
+    "@azure/keyvault-secrets": "^4.10.0",
+    "applicationinsights": "^3.9.0",
+    "botbuilder": "^4.22.2",
+    "dotenv": "^16.4.5",
+    "restify": "^11.1.0",
+    "restify-cors-middleware2": "^2.2.1"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wfinance/mesh-platform-multibot"
+  },
+  "bugs": {
+    "url": "https://github.com/wfinance/mesh-platform-multibot/issues"
+  },
+  "homepage": "https://github.com/wfinance/mesh-platform-multibot#readme",
+  "config": {
+    "port": 3978,
+    "logLevel": "info"
+  },
+  "directories": {
+    "lib": "./src",
+    "test": "./tests"
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "package.json",
+    "Dockerfile"
+  ],
+  "os": [
+    "linux",
+    "win32", 
+    "darwin"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
 }
