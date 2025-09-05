@@ -1,64 +1,91 @@
-// ===================================================
-// src/utils/logger.js
-// ===================================================
-const { appInsights } = require('./core/monitoring/appInsights');
+// src/config/env.js - VERSÃO CORRIGIDA
+const path = require('path');
+const fs = require('fs');
 
-class Logger {
-  static log(level, message, properties = {}) {
-    const timestamp = new Date().toISOString();
-    const logEntry = { timestamp, level, message, ...properties };
-    
-    // Console output (formatado para desenvolvimento)
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(JSON.stringify(logEntry, null, 2));
-    } else {
-      console.log(JSON.stringify(logEntry));
-    }
-    
-    // Enviar para Application Insights se disponível
-    if (appInsights.defaultClient) {
-      if (level === 'error') {
-        appInsights.defaultClient.trackException({
-          exception: new Error(message),
-          properties
-        });
-      } else {
-        appInsights.defaultClient.trackTrace({
-          message: `${level}: ${message}`,
-          severity: this.getAppInsightsSeverity(level),
-          properties
-        });
+class ConfigManager {
+  constructor() {
+    this.config = this.getDefaultConfig();
+  }
+
+  getDefaultConfig() {
+    return {
+      env: process.env.NODE_ENV || 'development',
+      port: Number(process.env.PORT || process.env.WEBSITES_PORT || 3978),
+      isProduction: process.env.NODE_ENV === 'production',
+      
+      // Bot Framework configuration
+      bot: {
+        appId: process.env.MICROSOFT_APP_ID || '',
+        appPassword: process.env.MICROSOFT_APP_PASSWORD || '',
+        appType: process.env.MICROSOFT_APP_TYPE || 'MultiTenant',
+        tenantId: process.env.MICROSOFT_APP_TENANT_ID || ''
+      },
+
+      // OpenAI configuration
+      openai: {
+        apiKey: process.env.OPENAI_API_KEY || '',
+        model: process.env.OPENAI_MODEL || 'gpt-4o-mini'
+      },
+
+      // Azure OpenAI configuration
+      azure: {
+        endpoint: process.env.AZURE_OPENAI_ENDPOINT || '',
+        apiKey: process.env.AZURE_OPENAI_API_KEY || '',
+        deployment: process.env.AZURE_OPENAI_DEPLOYMENT || '',
+        apiVersion: process.env.AZURE_OPENAI_API_VERSION || '2024-06-01'
       }
-    }
-  }
-  
-  static getAppInsightsSeverity(level) {
-    const levels = {
-      error: 3,
-      warn: 2,
-      info: 1,
-      debug: 0
     };
-    return levels[level] || 1;
   }
-  
-  static error(message, properties = {}) {
-    this.log('error', message, properties);
-  }
-  
-  static warn(message, properties = {}) {
-    this.log('warn', message, properties);
-  }
-  
-  static info(message, properties = {}) {
-    this.log('info', message, properties);
-  }
-  
-  static debug(message, properties = {}) {
-    if (process.env.ENABLE_DEBUG_LOGS === 'true') {
-      this.log('debug', message, properties);
+
+  async initialize() {
+    try {
+      // Load .env in development
+      if (this.config.env === 'development') {
+        const envPath = path.resolve(process.cwd(), '.env');
+        if (fs.existsSync(envPath)) {
+          require('dotenv').config({ path: envPath });
+          console.log('✅ .env file loaded');
+          
+          // Reload config after .env
+          this.config = this.getDefaultConfig();
+        } else {
+          console.log('ℹ️ No .env file found, using environment variables');
+        }
+      }
+
+      console.log('✅ Configuration initialized', {
+        environment: this.config.env,
+        port: this.config.port,
+        hasBotCredentials: !!(this.config.bot.appId && this.config.bot.appPassword),
+        hasAzureOpenAI: !!(this.config.azure.endpoint && this.config.azure.apiKey),
+        hasOpenAI: !!this.config.openai.apiKey
+      });
+      
+      return this.config;
+      
+    } catch (error) {
+      console.error('❌ Configuration error:', error.message);
+      return this.config;
     }
+  }
+
+  getConfig() {
+    return this.config;
   }
 }
 
-module.exports = Logger;
+// Singleton instance
+const configManager = new ConfigManager();
+
+// Initialize and export promise
+const configPromise = configManager.initialize()
+  .then(() => {
+    console.log('✅ Configuration ready');
+    return configManager.getConfig();
+  })
+  .catch((error) => {
+    console.error('❌ Configuration failed:', error.message);
+    return configManager.getConfig();
+  });
+
+module.exports = { configPromise, ConfigManager };

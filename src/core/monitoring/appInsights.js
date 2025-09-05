@@ -1,32 +1,21 @@
-let appInsights = {
-  defaultClient: null
-};
+// src/monitoring/appInsights.js
+let appInsights = { defaultClient: null };
 
-function initializeAppInsights() {
+try {
   const connectionString = process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
-  
   if (connectionString) {
-    try {
-      const ai = require('applicationinsights');
-      ai.setup(connectionString)
-        .setAutoCollectRequests(true)
-        .setAutoCollectExceptions(true)
-        .setAutoCollectDependencies(true)
-        .start();
-      
-      appInsights.defaultClient = ai.defaultClient;
-      console.log('✅ Application Insights initialized');
-    } catch (error) {
-      console.warn('⚠️ Application Insights package not available, monitoring disabled');
-    }
+    const ai = require('applicationinsights');
+    ai.setup(connectionString)
+      .setAutoCollectRequests(true)
+      .setAutoCollectExceptions(true)
+      .start();
+    appInsights.defaultClient = ai.defaultClient;
+    console.log('✅ Application Insights initialized');
   } else {
-    console.log('ℹ️ Application Insights not configured (APPLICATIONINSIGHTS_CONNECTION_STRING not set)');
+    console.log('ℹ️ Application Insights not configured');
   }
-  
-  return appInsights;
+} catch (error) {
+  console.log('⚠️ Application Insights not available:', error.message);
 }
-
-// Initialize immediately
-appInsights = initializeAppInsights();
 
 module.exports = { appInsights };
