@@ -2,10 +2,9 @@
 const { BaseBot } = require('../../core/bot/BaseBot');
 const { FluxoCaixaSkill } = require('../../skills/financial/FluxoCaixaSkill');
 const { ConciliacaoSkill } = require('../../skills/financial/ConciliacaoSkill');
-const { createMeshPrompt } = require('../../bot/personality/promptBuilder');
-const { MeshResponseFormatter } = require('../../bot/personality/responseFormatter');
-const logger = require('../../utils/logger');
-
+const { createMeshPrompt } = require('./personality/promptBuilder');
+const { MeshResponseFormatter } = require('./personality/responseFormatter');
+const logger = require('../../core/utils/logger');
 class MeshBot extends BaseBot {
   constructor(config) {
     super(config);

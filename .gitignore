@@ -1,0 +1,364 @@
+# ================================================
+# .gitignore - MESH Platform Multibot
+# ================================================
+# Criado para evitar commits indesejados
+# Versão: 2.1.0
+# Data: 05/09/2025
+
+# ================================================
+# DEPENDÊNCIAS - NUNCA COMMITAR
+# ================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# ================================================
+# VARIÁVEIS DE AMBIENTE - SEGURANÇA CRÍTICA
+# ================================================
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+.env.backup
+.env.original
+
+# Arquivos de configuração sensíveis
+secrets/
+credentials/
+config/secrets.json
+config/production.json
+
+# ================================================
+# ARQUIVOS DE SISTEMA E IDE
+# ================================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.AppleDouble
+.LSOverride
+Icon
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ================================================
+# IDEs E EDITORES
+# ================================================
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.history/
+*.vsix
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ================================================
+# BUILD E DISTRIBUIÇÃO
+# ================================================
+dist/
+build/
+out/
+coverage/
+.nyc_output/
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist
+.serverless/
+
+# ================================================
+# LOGS E RELATÓRIOS
+# ================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+pids
+*.pid
+*.seed
+*.pid.lock
+lib-cov
+coverage/
+.grunt
+.lock-wscript
+.fusebox/
+.tern-port
+.dynamodb/
+
+# MESH Platform logs específicos
+mesh-logs/
+reports/generated/
+temp-reports/
+debug-output/
+
+# ================================================
+# ARQUIVOS TEMPORÁRIOS
+# ================================================
+tmp/
+temp/
+.tmp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.swp
+*.swo
+
+# ================================================
+# BANCOS DE DADOS LOCAIS
+# ================================================
+*.sqlite
+*.sqlite3
+*.db
+*.db3
+*.s3db
+
+# ================================================
+# ARQUIVOS DE SEGURANÇA
+# ================================================
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+auth.json
+service-account.json
+
+# ================================================
+# AZURE ESPECÍFICO
+# ================================================
+.deployment
+*.azurewebsites.net
+local.settings.json
+.azure/
+*.PublishSettings
+*.publishsettings
+azurepubxml
+*.azurepubxml
+
+# Application Insights
+applicationinsights.json
+ApplicationInsights.config
+
+# ================================================
+# DOCKER
+# ================================================
+docker-compose.override.yml
+.dockerignore.local
+*.docker
+.docker/
+
+# ================================================
+# BOT FRAMEWORK ESPECÍFICO
+# ================================================
+bot-builder-workspace.code-workspace
+.bot-file-secret
+*.bot
+.bot
+
+# ================================================
+# GITHUB ACTIONS E CI/CD
+# ================================================
+.github/workflows/local-*
+.github/workflows/test-*
+!.github/workflows/master_*.yml
+!.github/workflows/deploy-*.yml
+
+# ================================================
+# ARQUIVOS DE TESTE
+# ================================================
+test-results/
+coverage/
+.nyc_output/
+junit.xml
+test-output/
+
+# ================================================
+# CACHE E PERFORMANCE
+# ================================================
+.npm
+.eslintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.cache
+jspm_packages/
+
+# ================================================
+# DESENVOLVIMENTO LOCAL
+# ================================================
+ngrok.exe
+ngrok
+*.local.json
+.local/
+dev-notes.md
+TODO.md
+NOTES.md
+
+# ================================================
+# MESH PLATFORM ESPECÍFICO
+# ================================================
+# Dados de desenvolvimento
+mesh-dev-data/
+test-conversations/
+mock-data/
+sample-reports/
+
+# Uploads temporários
+uploads/temp/
+files/temp/
+attachments/temp/
+
+# Relatórios gerados
+reports/output/
+exports/
+generated-files/
+
+# Cache de skills
+skills-cache/
+llm-cache/
+
+# ================================================
+# COMPRESSÃO E ARQUIVOS
+# ================================================
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.tar
+*.gz
+*.bz2
+*.xz
+
+# ================================================
+# BACKUP E VERSIONAMENTO
+# ================================================
+*.backup
+*.back
+*.save
+*.orig
+*_backup
+*_old
+*.v1
+*.v2
+
+# ================================================
+# RUNTIME E PROCESSOS
+# ================================================
+.yarn-integrity
+.node_repl_history
+*.tsbuildinfo
+.tscache/
+
+# ================================================
+# CONFIGURAÇÕES LOCAIS ESPECÍFICAS
+# ================================================
+.env.mesh.local
+.env.wfinance.local
+config.local.js
+settings.local.json
+
+# Cosmos DB Emulator
+CosmosDB.Emulator/
+
+# Local databases
+localdb/
+devdb/
+
+# ================================================
+# OUTROS ARQUIVOS COMUNS
+# ================================================
+.sass-cache/
+connect.lock
+typings/
+.vscode-test
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*

@@ -1,7 +1,7 @@
 // MESH Platform - Entry Point Integrado (mesh-refining + wf-core-ia)
 const { configPromise } = require('./config/env');
-const logger = require('./utils/logger');
-const { appInsights } = require('./monitoring/appInsights');
+const logger = require('./core/utils/logger');
+const { appInsights } = require('./core/monitoring/appInsights');
 const { createMeshBot } = require('./bots/mesh');
 
 class MeshPlatform {
@@ -102,14 +102,14 @@ class MeshPlatform {
   }
 
   async initializeServer() {
-    // Usar servidor Restify do mesh-refining
-    const { createServer } = require('./server/createServer');
+    // Usar servidor Restify do core
+    const { createServer } = require('./core/server/createServer');
     this.server = createServer();
   }
 
   async initializeAdapter() {
-    // Usar adapter do mesh-refining
-    const { createAdapter } = require('./server/adapter');
+    // Usar adapter do core
+    const { createAdapter } = require('./core/server/adapter');
     this.adapter = createAdapter({
       appId: this.config.bot.appId,
       appPassword: this.config.bot.appPassword,
@@ -142,7 +142,7 @@ class MeshPlatform {
   }
 
   async initializeMeshBot() {
-    // Usar factory modular do wf-core-ia
+    // Usar factory modular
     logger.info('Creating MESH Bot with modular architecture...');
     
     this.meshBot = await createMeshBot({
@@ -155,8 +155,8 @@ class MeshPlatform {
   }
 
   async initializeRoutes() {
-    // Usar routes do mesh-refining
-    const { registerMessagesRoute } = require('./routes/messages');
+    // Usar routes do core
+    const { registerMessagesRoute } = require('./core/routes/messages');
     registerMessagesRoute(this.server, this.adapter, this.meshBot);
   }
 
@@ -175,7 +175,7 @@ class MeshPlatform {
   }
 
   setupMonitoring() {
-    // Sistema de monitoramento do mesh-refining
+    // Sistema de monitoramento
     process.on('exit', (code) => {
       logger.info('Process exiting', { code });
     });

@@ -1,4 +1,6 @@
-// Base Skill Framework - Para todas as skills
+// ===================================================
+// src/skills/BaseSkill.js
+// ===================================================
 class BaseSkill {
   constructor(name, description, config = {}) {
     this.name = name;
@@ -18,5 +20,7 @@ class BaseSkill {
     return { valid: true, errors: [] };
   }
 }
+
+module.exports = { BaseSkill };
 
 module.exports = { BaseSkill };

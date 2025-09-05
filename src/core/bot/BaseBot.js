@@ -1,4 +1,6 @@
-// Base Bot Framework - Com LLM e Memory integrados
+// ===================================================
+// src/core/bot/BaseBot.js
+// ===================================================
 const { ActivityHandler } = require('botbuilder');
 
 class BaseBot extends ActivityHandler {
@@ -48,7 +50,7 @@ class BaseBot extends ActivityHandler {
     // 2. Fallback para LLM se configurado
     if (this.llmService) {
       try {
-        const response = await this.llmService.processMessage(text, context);
+        const response = await this.llmService.processMessage(text, this.config, context);
         await context.sendActivity(response);
         await this.saveToMemory(userId, text, response);
         return;
