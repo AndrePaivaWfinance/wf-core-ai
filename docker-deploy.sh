@@ -1,41 +1,63 @@
 #!/bin/bash
+# ================================================
+# AZURE DEPLOYMENT SCRIPT
+# ================================================
+
 set -e
 
-log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
-log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
-log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1"; }
+# Configurações
+REGISTRY="meshbrainregistry.azurecr.io"
+IMAGE_NAME="mesh-full"
+TAG="v1.0"
+RESOURCE_GROUP="mesh-platform-rg"
+APP_NAME="mesh-full"
+LOCATION="brazilsouth"
 
-start_mesh() {
-    log_info "Starting MESH Platform with Docker..."
-    
-    if [ ! -f ".env" ] && [ -f ".env.example" ]; then
-        log_info "Copying .env.example to .env"
-        cp .env.example .env
-    fi
-    
-    docker-compose up -d --build
-    
-    log_info "Waiting for MESH to start..."
-    sleep 15
-    
-    if curl -f http://localhost:3978/healthz >/dev/null 2>&1; then
-        log_success "✅ MESH Platform is running!"
-        echo ""
-        echo "🌐 Health Check: http://localhost:3978/healthz"
-        echo "🤖 Bot Endpoint: http://localhost:3978/api/messages"
-        echo ""
-        echo "Test command:"
-        echo 'curl -X POST http://localhost:3978/api/messages -H "Content-Type: application/json" -d '\''{"type":"message","text":"oi","from":{"id":"test","name":"User"}}'\'''
-    else
-        log_error "❌ MESH failed to start"
-        docker-compose logs mesh-platform
-    fi
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${YELLOW}🚀 Deploying to Azure...${NC}"
+
+# Login no Azure
+echo -e "${YELLOW}🔐 Logging into Azure...${NC}"
+az login
+
+# Login no ACR
+echo -e "${YELLOW}📦 Logging into ACR...${NC}"
+az acr login --name $REGISTRY
+
+# Build da imagem
+echo -e "${YELLOW}🏗️ Building Docker image...${NC}"
+docker build -t $REGISTRY/$IMAGE_NAME:$TAG .
+
+# Push da imagem
+echo -e "${YELLOW}📤 Pushing image to ACR...${NC}"
+docker push $REGISTRY/$IMAGE_NAME:$TAG
+
+# Deploy para Azure Web App
+echo -e "${YELLOW}🌐 Deploying to Azure Web App...${NC}"
+az webapp config container set \
+    --name $APP_NAME \
+    --resource-group $RESOURCE_GROUP \
+    --docker-custom-image-name $REGISTRY/$IMAGE_NAME:$TAG \
+    --docker-registry-server-url https://$REGISTRY \
+    --docker-registry-server-user $REGISTRY \
+    --docker-registry-server-password $(az acr credential show --name $REGISTRY --query "passwords[0].value" -o tsv)
+
+# Restart do Web App
+echo -e "${YELLOW}🔄 Restarting Web App...${NC}"
+az webapp restart --name $APP_NAME --resource-group $RESOURCE_GROUP
+
+# Health check
+echo -e "${YELLOW}🏥 Health check...${NC}"
+sleep 30
+curl -f https://$APP_NAME.azurewebsites.net/healthz || {
+    echo -e "${RED}❌ Health check failed!${NC}"
+    exit 1
 }
 
-case "${1:-start}" in
-    "start"|"up") start_mesh ;;
-    "stop"|"down") docker-compose down; log_success "MESH stopped" ;;
-    "logs") docker-compose logs -f mesh-platform ;;
-    "status") docker-compose ps && curl -f http://localhost:3978/healthz 2>/dev/null && echo "✅ Healthy" || echo "❌ Not responding" ;;
-    *) echo "Usage: $0 [start|stop|logs|status]" ;;
-esac
+echo -e "${GREEN}✅ Deployment successful!${NC}"
+echo -e "${GREEN}🌐 App URL: https://$APP_NAME.azurewebsites.net${NC}"

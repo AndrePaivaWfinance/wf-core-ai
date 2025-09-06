@@ -1,0 +1,59 @@
+# ================================================
+# GITHUB ACTIONS - AZURE DEPLOY
+# ================================================
+
+name: Deploy to Azure ACR and Web App
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  REGISTRY_NAME: meshbrainregistry
+  APP_NAME: mesh-platform
+  RESOURCE_GROUP: mesh-platform-rg
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Azure ACR
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+        username: ${{ secrets.AZURE_ACR_USERNAME }}
+        password: ${{ secrets.AZURE_ACR_PASSWORD }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
+          ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:latest
+        cache-from: type=registry,ref=${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:buildcache
+        cache-to: type=registry,ref=${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:buildcache,mode=max
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.APP_NAME }}
+        slot-name: production
+        images: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+
+    - name: Run smoke test
+      run: |
+        sleep 30
+        curl -f https://${{ env.APP_NAME }}.azurewebsites.net/healthz || exit 1

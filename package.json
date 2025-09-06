@@ -1,31 +1,130 @@
-{
-  "name": "mesh-platform",
-  "version": "2.0.0",
-  "dependencies": {
-    "applicationinsights": "^2.8.1",
-    "botbuilder": "^4.20.0",
-    "dotenv": "^16.3.1",
-    "restify": "^11.1.0",
-    "winston": "^3.17.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "eslint": "^8.45.0",
-    "jest": "^29.6.0",
-    "prettier": "^3.0.0",
-    "supertest": "^6.3.0",
-    "typescript": "^5.0.0"
-  },
-  "scripts": {
-    "start": "node src/index.js",
-    "dev": "NODE_ENV=development node src/index.js",
-    "prod": "NODE_ENV=production node src/index.js",
-    "test": "jest --coverage",
-    "test:watch": "jest --watch",
-    "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix",
-    "format": "prettier --write src/",
-    "docker:build": "docker build -t mesh-platform .",
-    "docker:run": "docker run -p 3978:3978 mesh-platform"
-  }
-}
+# ===========================================
+# MESH PLATFORM - CONFIGURAÇÃO INTEGRADA
+# ===========================================
+
+# Porta do servidor (Azure Web App usa PORT do ambiente)
+PORT=3978
+
+# ===========================================
+# CREDENCIAIS DO BOT FRAMEWORK (OBRIGATÓRIO)
+# ===========================================
+# Obtenha essas informações no Azure Portal > Bot Channels Registration
+MICROSOFT_APP_ID=db782342-5615-4a0a-8087-63dbc6d9fc5c
+MICROSOFT_APP_PASSWORD=Nsv8Q~T0VypAtOrSMB6mIq8oFedHJconP5MXccXD
+
+# Tipo de aplicação (para Teams, geralmente SingleTenant)
+MICROSOFT_APP_TYPE=SingleTenant
+MICROSOFT_APP_TENANT_ID=9ad45470-e5c8-45d9-a335-b5f311990261
+
+# ===========================================
+# AZURE OPENAI (RECOMENDADO PARA TEAMS)
+# ===========================================
+# Endpoint do seu recurso Azure OpenAI
+AZURE_OPENAI_ENDPOINT=https://mesh-gpt-openai-b117.openai.azure.com/
+# Chave de API do Azure OpenAI
+AZURE_OPENAI_API_KEY=587ae5596290455282662ee9f9006e98
+# Nome do deployment do modelo (ex: gpt-4, gpt-35-turbo)
+AZURE_OPENAI_DEPLOYMENT=gpt-4o
+# Versão da API (2024-06-01 é estável)
+AZURE_OPENAI_API_VERSION=2024-12-01-preview
+
+# ===========================================
+# OPENAI (FALLBACK OPCIONAL)
+# ===========================================
+# Chave da API OpenAI (opcional, usado como fallback)
+OPENAI_API_KEY=
+# Modelo OpenAI (opcional)
+OPENAI_MODEL=gpt-4o-mini
+
+# ===========================================
+# MONITORAMENTO (OPCIONAL)
+# ===========================================
+# Connection string do Application Insights
+APPLICATIONINSIGHTS_CONNECTION_STRING=
+
+# ===========================================
+# DESENVOLVIMENTO E DEBUG
+# ===========================================
+# Ambiente (development, production)
+NODE_ENV=production
+
+# Habilitar logs de debug
+ENABLE_DEBUG_LOGS=true
+
+# Nível de log (error, warn, info, debug)
+LOG_LEVEL=info
+
+# ===========================================
+# AZURE FUNCTIONS (PARA SKILLS FUTURAS)
+# ===========================================
+# URLs das Azure Functions para skills MESH
+AZURE_FUNCTION_FLUXO_CAIXA_URL=
+AZURE_FUNCTION_FLUXO_CAIXA_KEY=
+
+AZURE_FUNCTION_CONCILIACAO_URL=
+AZURE_FUNCTION_CONCILIACAO_KEY=
+
+AZURE_FUNCTION_RELATORIOS_URL=
+AZURE_FUNCTION_RELATORIOS_KEY=
+
+# ===========================================
+# COSMOS DB (PARA DADOS FINANCEIROS)
+# ===========================================
+# Endpoint do Cosmos DB
+COSMOS_DB_ENDPOINT=
+# Chave primária do Cosmos DB
+COSMOS_DB_KEY=
+# Nome do database
+COSMOS_DB_DATABASE=wfinance-mesh
+# Nome do container principal
+COSMOS_DB_CONTAINER=financial-data
+
+# ===========================================
+# CACHE E PERFORMANCE
+# ===========================================
+# Cache TTL em milissegundos (5 minutos)
+LLM_CACHE_TTL=300000
+# Timeout para requests LLM em milissegundos
+LLM_DEFAULT_TIMEOUT=10000
+
+RATE_LIMIT_MAX=1000
+RATE_LIMIT_WINDOW_MS=900000
+LOG_LEVEL=info
+
+REDIS_URL=redis://redis:6379
+
+# ===========================================
+# CONFIGURAÇÕES ESPECÍFICAS DO TEAMS
+# ===========================================
+# O bot funcionará automaticamente no Teams quando:
+# 1. As credenciais acima estiverem corretas
+# 2. O canal Teams estiver habilitado no Bot Channels Registration
+# 3. O Messaging Endpoint estiver configurado como:
+#    https://bot-wf-meshv20.azurewebsites.net/api/messages
+
+# ===========================================
+# NOTAS IMPORTANTES
+# ===========================================
+# - Para produção no Teams, SEMPRE use Azure OpenAI (mais seguro e confiável)
+# - Certifique-se que o Bot Channels Registration tem o canal Teams habilitado
+# - O App ID deve corresponder ao registrado no Azure AD
+# - Para desenvolvimento local, use ngrok e atualize o Messaging Endpoint
+
+# EXEMPLO DE DESENVOLVIMENTO LOCAL:
+# 1. Execute: ngrok http 3978
+# 2. Copie a URL HTTPS do ngrok
+# 3. Configure no Azure: https://seu-ngrok-id.ngrok.io/api/messages
+# 4. Teste no Teams ou WebChat
+
+# MESH PERSONALITY:
+# - Nome: MESH
+# - Empresa: Wfinance
+# - Função: Analista Sênior de BPO Financeiro
+# - Expertise: Conciliação, Fluxo de Caixa, Processos, Compliance
+
+# SKILLS DISPONÍVEIS:
+# - Fluxo de Caixa (local + Azure Function)
+# - Conciliação Bancária (local + Azure Function)
+# - Relatórios Financeiros (futuro)
+# - Integração ERP (futuro)
+# - Envio de Email (futuro)
