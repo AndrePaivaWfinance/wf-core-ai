@@ -1,34 +1,24 @@
-FROM node:20-alpine
-
-LABEL maintainer="MESH Team"
-LABEL version="2.1.0"
-LABEL description="MESH - Analista de BPO Financeiro IA"
-
-RUN apk add --no-cache curl dumb-init
-
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S meshbot -u 1001
+FROM node:18-alpine AS builder
 
 WORKDIR /app
-
 COPY package*.json ./
+RUN npm ci --only=production
 
-RUN npm ci --only=production --no-audit --no-fund && \
-    npm cache clean --force
+FROM node:18-alpine AS runtime
 
-COPY src ./src
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY . .
 
-RUN chown -R meshbot:nodejs /app
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S mesh -u 1001
 
-ENV NODE_ENV=production
-ENV PORT=3978
+USER mesh
 
 EXPOSE 3978
 
-USER meshbot
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3978/healthz || exit 1
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-    CMD curl -f http://localhost:3978/healthz || exit 1
-
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "src/index.js"]
+CMD ["npm", "start"]

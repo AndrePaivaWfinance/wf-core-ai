@@ -1,7 +1,7 @@
 // MESH Bot Factory - Versão Simplificada e Funcional
 const { MeshBot } = require('./MeshBot');
 const { llmService } = require('../../core/services/llm/LLMService');
-const logger = require('../../core/utils/logger'); // Logger do core
+const logger = require('../../utils/logger'); // Logger do core
 
 async function createMeshBot(config) {
   logger.info('🏭 Creating MESH Bot with integrated services...');

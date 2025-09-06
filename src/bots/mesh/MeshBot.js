@@ -1,18 +1,12 @@
-// ================================================
-// MESH BOT PURE NATURAL - ZERO SCRIPTS
-// ================================================
-// MESH age naturalmente, sem estruturas pré-definidas
 
-const { BaseBot } = require('../../core/bot/BaseBot');
-const { FluxoCaixaSkill } = require('../../skills/financial/FluxoCaixaSkill');
-const { ConciliacaoSkill } = require('../../skills/financial/ConciliacaoSkill');
-const logger = require('../../core/utils/logger');
+// src/bots/mesh/MeshBot.js - VERSÃO SIMPLIFICADA
+const { ActivityHandler, MessageFactory } = require('botbuilder');
+const logger = require('../../utils/logger');
 
-class MeshBotPureNatural extends BaseBot {
-  constructor(config) {
-    super(config);
+class MeshBotPureNatural extends ActivityHandler {
+  constructor() {
+    super();
     
-    // Apenas informações básicas - sem scripts
     this.identity = {
       name: "MESH",
       role: "Analista Sênior de BPO Financeiro", 
@@ -20,76 +14,147 @@ class MeshBotPureNatural extends BaseBot {
       experience: "5 anos"
     };
     
-    // Registrar skills
-    this.registerSkill(new FluxoCaixaSkill());
-    this.registerSkill(new ConciliacaoSkill());
-    
-    logger.info('🤖 MESH Bot Pure Natural - Zero scripts, comunicação livre');
+    this.setupHandlers();
+    logger.info('🤖 MESH Bot initialized - Zero scripts, comunicação natural');
   }
 
-  // ================================================
-  // PROCESSAMENTO NATURAL SIMPLES
-  // ================================================
-
-  async processMessage(context) {
-    const text = (context.activity.text || '').trim();
-    const userId = context.activity.from?.id || 'unknown';
-    const requestId = context.activity.id || `mesh-${Date.now()}`;
-
-    try {
-      // Se não tem texto, resposta simples
-      if (!text) {
-        await context.sendActivity("Oi! Em que posso ajudar?");
-        return;
+  setupHandlers() {
+    // Message handler
+    this.onMessage(async (context, next) => {
+      try {
+        await this.processNaturalMessage(context);
+      } catch (error) {
+        logger.error('❌ Error processing message', error);
+        await this.sendErrorMessage(context);
+      } finally {
+        await next();
       }
+    });
 
-      // Tentar skills primeiro
-      for (const [skillName, skill] of this.skills) {
-        if (await skill.canHandle(text, context)) {
-          const result = await skill.safeExecute({}, context);
-          if (result.success) {
-            await context.sendActivity(result.data);
-            return;
+    // Member added handler
+    this.onMembersAdded(async (context, next) => {
+      try {
+        for (const member of context.activity.membersAdded) {
+          if (member.id !== context.activity.recipient.id) {
+            await this.handleNewMember(context, member);
           }
         }
+      } catch (error) {
+        logger.error('❌ Error handling new member', error);
+      } finally {
+        await next();
       }
+    });
+  }
 
-      // Se skills não conseguiram, usar LLM naturalmente
-      if (this.llmService) {
-        const response = await this.llmService.processMessage(text, this.config, context);
-        await context.sendActivity(response);
-      } else {
-        // Fallback simples e natural
-        await context.sendActivity(this.naturalFallback(text));
-      }
-
-    } catch (error) {
-      logger.error('Error processing message:', error);
-      await context.sendActivity("Tive um problema técnico. Pode tentar de novo?");
+  async processNaturalMessage(context) {
+    const text = (context.activity.text || '').trim();
+    const userId = context.activity.from?.id || 'unknown';
+    
+    if (!text) {
+      await context.sendActivity("Oi! Em que posso ajudar?");
+      return;
     }
+
+    logger.info('💬 Message received', { userId, textLength: text.length });
+
+    // Generate natural response
+    const response = this.generateNaturalResponse(text);
+    
+    await context.sendActivity(response);
+    logger.info('✅ Response sent', { userId, responseLength: response.length });
+  }
+
+  generateNaturalResponse(text) {
+    const lowerText = text.toLowerCase();
+    
+    // Natural conversation patterns
+    if (this.isGreeting(lowerText)) {
+      return this.generateGreetingResponse();
+    }
+    
+    if (this.isFinancialTopic(lowerText)) {
+      return this.generateFinancialResponse(lowerText);
+    }
+    
+    if (this.isQuestion(lowerText)) {
+      return this.generateQuestionResponse();
+    }
+    
+    // Default natural response
+    return this.generateDefaultResponse();
+  }
+
+  isGreeting(text) {
+    const greetings = ['oi', 'olá', 'ola', 'hello', 'hi', 'e aí', 'tudo bem'];
+    return greetings.some(greeting => text.includes(greeting));
+  }
+
+  isFinancialTopic(text) {
+    const financialTerms = [
+      'fluxo', 'caixa', 'conciliação', 'conciliacao', 'bancária', 'bancaria',
+      'relatório', 'relatorio', 'dre', 'balanço', 'balanco', 'financeiro'
+    ];
+    return financialTerms.some(term => text.includes(term));
+  }
+
+  isQuestion(text) {
+    return text.includes('?') || text.startsWith('como');
+  }
+
+  generateGreetingResponse() {
+    const greetings = [
+      "Oi! Sou o MESH, analista financeiro da Wfinance. Como posso ajudar?",
+      "Olá! Em que posso ajudar hoje?",
+      "Oi! Tudo bem? No que posso ser útil?"
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  }
+
+  generateFinancialResponse(text) {
+    if (text.includes('fluxo') && text.includes('caixa')) {
+      return "Para análise de fluxo de caixa, posso ajudar com projeções e análise de sazonalidade. Qual período você precisa?";
+    }
+    
+    if (text.includes('conciliação') || text.includes('conciliacao')) {
+      return "Conciliação bancária é uma das minhas especialidades! De qual banco você precisa?";
+    }
+    
+    if (text.includes('relatório') || text.includes('relatorio')) {
+      return "Posso ajudar com relatórios financeiros: DRE, balanço, indicadores. Qual tipo você precisa?";
+    }
+    
+    return "Trabalho com análises financeiras, conciliações, relatórios e projeções. O que exatamente você precisa?";
+  }
+
+  generateQuestionResponse() {
+    return "Boa pergunta! Como analista financeiro, posso ajudar com diversas questões de negócio. Pode me dar mais detalhes do que precisa?";
+  }
+
+  generateDefaultResponse() {
+    const responses = [
+      "Entendi. Como posso ajudar com isso?",
+      "Certo. Me conte mais sobre o que você precisa...",
+      "Interessante. No que posso ser útil especificamente?"
+    ];
+    return responses[Math.floor(Math.random() * responses.length)];
   }
 
   async handleNewMember(context, member) {
     const name = member.name || 'colega';
-    await context.sendActivity(`Oi ${name}! Sou o MESH, analista financeiro da Wfinance. Qualquer coisa, é só falar.`);
+    const welcomeMessage = `Oi ${name}! Sou o MESH, analista financeiro da Wfinance. Como posso ajudar?`;
+    await context.sendActivity(welcomeMessage);
+    logger.info('👋 Welcome message sent', { userId: member.id });
   }
 
-  naturalFallback(text) {
-    const lower = text.toLowerCase();
-    
-    if (lower.includes('fluxo')) {
-      return "Para fluxo de caixa, posso analisar qualquer período que você precisar. Qual você tem em mente?";
+  async sendErrorMessage(context) {
+    try {
+      await context.sendActivity(
+        MessageFactory.text("Tive um problema técnico. Pode tentar novamente?")
+      );
+    } catch (error) {
+      logger.error('❌ Failed to send error message', error);
     }
-    
-    if (lower.includes('conciliação') || lower.includes('conciliacao')) {
-      return "Conciliação bancária é uma das coisas que mais faço. Qual banco você precisa?";
-    }
-    
-    if (lower.includes('relatório') || lower.includes('relatorio')) {
-      return "Que tipo de relatório você precisa? DRE, balanço, algo específico?";
-    }
-    
-    return "Trabalho com análises financeiras, conciliações e relatórios. O que você precisa?";
   }
 }
 
