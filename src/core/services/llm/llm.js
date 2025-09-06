@@ -1,134 +1,187 @@
-// src/services/llm.js - Versão Mínima Funcional
-const logger = require('../utils/logger');
+// ================================================
+// LLM SERVICE MÍNIMO - SEM SCRIPTS, TOTALMENTE NATURAL
+// ================================================
 
-class LLMService {
+const logger = require('../core/utils/logger');
+
+class MinimalNaturalLLM {
   constructor() {
+    this.fetch = this.getFetch();
     this.initialized = false;
+  }
+
+  getFetch() {
+    if (typeof globalThis !== 'undefined' && globalThis.fetch) {
+      return globalThis.fetch.bind(globalThis);
+    }
+    if (typeof fetch !== 'undefined') return fetch;
+    try {
+      return require('node-fetch');
+    } catch (error) {
+      return null;
+    }
   }
 
   async initialize() {
-    try {
-      logger.info('🧠 LLM Service initializing...');
-      this.initialized = true;
-      logger.info('✅ LLM Service initialized');
-    } catch (error) {
-      logger.error('❌ LLM Service initialization failed:', error.message);
-    }
+    this.initialized = true;
+    logger.info('✅ Minimal Natural LLM initialized');
   }
+
+  // ================================================
+  // PROMPT MÍNIMO E NATURAL
+  // ================================================
+
+  buildMinimalPrompt() {
+    return `Você é o MESH, analista sênior de BPO Financeiro da Wfinance há 5 anos.
+
+Converse naturalmente como um profissional experiente conversaria. Seja direto, prático e útil.
+
+Suas principais atividades:
+- Análise de fluxo de caixa
+- Conciliação bancária  
+- Relatórios financeiros
+- Integração de sistemas (Cosmos DB, APIs ERP, Nibo)
+
+Responda em português brasileiro, de forma natural e profissional.`;
+  }
+
+  // ================================================
+  // PROCESSAMENTO SIMPLES
+  // ================================================
 
   async processMessage(text, config, context = null) {
-    const requestId = context?.activity?.id || `req-${Date.now()}`;
-    
-    logger.debug('🔄 Processing LLM message', {
-      requestId,
-      textLength: text?.length || 0,
-      hasConfig: !!config
-    });
+    if (!text?.trim()) {
+      return "Oi! Em que posso ajudar?";
+    }
+
+    if (!this.fetch) {
+      return this.simpleFallback(text);
+    }
 
     try {
-      // Por enquanto, resposta básica do MESH
-      if (!text || text.trim() === '') {
-        return 'Olá! Sou o MESH, analista de BPO Financeiro da Wfinance. Como posso ajudá-lo hoje?';
+      // Tentar Azure OpenAI primeiro
+      if (config?.azure?.endpoint && config?.azure?.apiKey) {
+        const result = await this.tryAzure(text, config.azure);
+        if (result) return result;
       }
 
-      // Resposta contextual básica
-      const lowerText = text.toLowerCase();
-      
-      if (lowerText.includes('fluxo') && lowerText.includes('caixa')) {
-        return `📊 **Análise de Fluxo de Caixa**
-
-Posso ajudá-lo com:
-• Relatórios de entrada e saída
-• Projeções financeiras
-• Análise de tendências
-• Identificação de gargalos
-
-Precisa de algum relatório específico?`;
-      }
-      
-      if (lowerText.includes('conciliação') || lowerText.includes('conciliacao')) {
-        return `🏦 **Conciliação Bancária**
-
-Serviços disponíveis:
-• Conciliação automática de extratos
-• Identificação de divergências
-• Relatórios de pendências
-• Análise de movimentações
-
-Qual banco ou período você gostaria de conciliar?`;
-      }
-      
-      if (lowerText.includes('relatório') || lowerText.includes('relatorio')) {
-        return `📋 **Relatórios Financeiros**
-
-Relatórios disponíveis:
-• DRE (Demonstração do Resultado)
-• Balanço Patrimonial
-• Fluxo de Caixa
-• Contas a Pagar/Receber
-• Análises personalizadas
-
-Qual relatório você precisa?`;
-      }
-      
-      if (lowerText.includes('ajuda') || lowerText.includes('help')) {
-        return `🤖 **MESH - Analista BPO Financeiro**
-
-**Minhas especialidades:**
-• 📊 Análise de fluxo de caixa
-• 🏦 Conciliação bancária
-• 📋 Relatórios gerenciais
-• 💰 Controle financeiro
-• 📈 Projeções e análises
-
-**Como posso ajudar:**
-- Digite "fluxo de caixa" para análises
-- Digite "conciliação" para reconciliações
-- Digite "relatório" para documentos
-- Ou me conte sua necessidade específica
-
-Estou aqui para otimizar seus processos financeiros!`;
+      // Fallback OpenAI
+      if (config?.openai?.apiKey) {
+        const result = await this.tryOpenAI(text, config.openai);
+        if (result) return result;
       }
 
-      // Resposta genérica profissional
-      return `Como analista de BPO Financeiro da Wfinance, posso ajudá-lo com processos financeiros, análises e relatórios.
-
-**Suas opções:**
-• Análise de fluxo de caixa
-• Conciliação bancária  
-• Relatórios gerenciais
-• Consultoria em processos
-
-Poderia especificar sua necessidade? Por exemplo: "Preciso do fluxo de caixa de dezembro" ou "Como fazer conciliação do Banco do Brasil".`;
+      return this.simpleFallback(text);
 
     } catch (error) {
-      logger.error('❌ LLM processing error:', {
-        requestId,
-        error: error.message
-      });
-      
-      return 'Desculpe, estou enfrentando dificuldades técnicas no momento. Nossa equipe já foi notificada. Tente novamente em alguns instantes.';
+      logger.error('LLM error:', error.message);
+      return this.simpleFallback(text);
     }
   }
 
-  async shutdown() {
-    logger.info('🔄 LLM Service shutting down...');
-    this.initialized = false;
-    logger.info('✅ LLM Service shut down');
+  async tryAzure(text, azureConfig) {
+    try {
+      const { endpoint, apiKey, deployment, apiVersion } = azureConfig;
+      
+      const url = `${endpoint.replace(/\/$/, '')}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion || '2024-06-01'}`;
+      
+      const response = await this.fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': apiKey
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: this.buildMinimalPrompt() },
+            { role: 'user', content: text }
+          ],
+          max_tokens: 800,
+          temperature: 0.7
+        })
+      });
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      return data?.choices?.[0]?.message?.content?.trim();
+
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async tryOpenAI(text, openaiConfig) {
+    try {
+      const { apiKey, model } = openaiConfig;
+      
+      const response = await this.fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model || 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: this.buildMinimalPrompt() },
+            { role: 'user', content: text }
+          ],
+          max_tokens: 800,
+          temperature: 0.7
+        })
+      });
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      return data?.choices?.[0]?.message?.content?.trim();
+
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // ================================================
+  // FALLBACK SIMPLES
+  // ================================================
+
+  simpleFallback(text) {
+    const lower = text.toLowerCase();
+    
+    if (lower.includes('fluxo') && lower.includes('caixa')) {
+      return "Para fluxo de caixa, posso analisar qualquer período. Qual você precisa?";
+    }
+    
+    if (lower.includes('conciliação') || lower.includes('conciliacao')) {
+      return "Conciliação bancária é algo que faço bastante. Qual banco?";
+    }
+    
+    if (lower.includes('relatório') || lower.includes('relatorio')) {
+      return "Que tipo de relatório você está pensando?";
+    }
+    
+    if (lower.includes('help') || lower.includes('ajuda')) {
+      return "Trabalho com análises financeiras, conciliações e relatórios. O que você precisa?";
+    }
+    
+    return "Como posso ajudar? Trabalho principalmente com processos financeiros.";
   }
 }
 
-// Singleton instance
-const llmService = new LLMService();
+// Instância singleton
+const minimalLLM = new MinimalNaturalLLM();
 
-// Initialize automatically
-llmService.initialize().catch(error => {
-  logger.error('Failed to auto-initialize LLM Service:', error.message);
-});
+// Auto-inicializar
+minimalLLM.initialize();
 
-// Export both the class and instance
+// Função de exportação
+async function processMessage(text, config, context) {
+  return await minimalLLM.processMessage(text, config, context);
+}
+
 module.exports = {
-  LLMService,
-  llmService,
-  processMessage: (text, config, context) => llmService.processMessage(text, config, context)
+  processMessage,
+  MinimalNaturalLLM,
+  minimalLLM
 };
