@@ -1,60 +1,27 @@
-# ================================================
-# MESH PLATFORM - DOCKERFILE AZURE ACR
-# ================================================
-
-# Stage 1: Builder
-FROM node:18-alpine AS builder
+# Dockerfile para MeshBot - Versão Simplificada
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copiar package files
-COPY package*.json ./
+# Copiar arquivos de dependências
+COPY package.json .
 COPY package-lock.json* ./
 
-# Instalar dependências
-RUN npm ci --include=dev
+# Instalar dependências de produção apenas
+RUN npm ci --only=production
 
-# Copiar código
-COPY . .
-
-# Auditar dependências
-RUN npm audit --audit-level=moderate
-
-# Stage 2: Production
-FROM node:18-alpine AS production
-
-# Instalar dependências do sistema
-RUN apk add --no-cache \
-    curl \
-    tzdata && \
-    ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+# Copiar código da aplicação
+COPY src/ ./src/
 
 # Criar usuário não-root
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S mesh -u 1001
+    adduser -S meshbot -u 1001 && \
+    chown -R meshbot:nodejs /app
 
-WORKDIR /app
+USER meshbot
 
-# Copiar node_modules e código
-COPY --from=builder --chown=mesh:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=mesh:nodejs /app/package*.json ./
-COPY --from=builder --chown=mesh:nodejs /app/src ./src
-
-# Criar diretório de logs
-RUN mkdir -p logs && \
-    chown -R mesh:nodejs logs && \
-    chmod -R 755 logs
-
-USER mesh
-
+# Expor porta
 EXPOSE 3978
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:3978/healthz || exit 1
-
-ENV NODE_ENV=production \
-    PORT=3978 \
-    LOG_LEVEL=info \
-    TZ=America/Sao_Paulo
-
+# Comando de inicialização
 CMD ["node", "src/index.js"]

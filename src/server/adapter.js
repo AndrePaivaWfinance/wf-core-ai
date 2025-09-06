@@ -1,8 +1,8 @@
 // src/server/adapter.js
-const { BotFrameworkAdapter } = require('botbuilder');
-const logger = require('../utils/logger');
+import { BotFrameworkAdapter } from 'botbuilder';
+import logger from '../utils/logger.js';
 
-function createAdapter() {
+export function createAdapter() {
   logger.info('🔌 Creating Bot Framework Adapter', {
     hasCredentials: !!(process.env.MicrosoftAppId || process.env.MICROSOFT_APP_ID),
     environment: process.env.NODE_ENV || 'development'
@@ -58,5 +58,3 @@ function createAdapter() {
   logger.info('✅ Adapter configuration complete');
   return adapter;
 }
-
-module.exports = { createAdapter };

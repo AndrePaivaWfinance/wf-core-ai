@@ -1,6 +1,6 @@
 {
   "name": "wf-core-ai",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "MESH Platform - AI Financial Analyst Bot for Wfinance",
   "main": "src/index.js",
   "type": "module",
@@ -34,7 +34,8 @@
     "botbuilder": "^4.20.0",
     "winston": "^3.10.0",
     "dotenv": "^16.3.1",
-    "applicationinsights": "^2.8.1"
+    "applicationinsights": "^2.8.1",
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -42,7 +43,8 @@
     "eslint": "^8.45.0",
     "prettier": "^3.0.0",
     "supertest": "^6.3.0",
-    "audit-ci": "^6.0.0"
+    "audit-ci": "^6.0.0",
+    "nodemon": "^3.0.1",
   },
   "engines": {
     "node": ">=18.0.0",

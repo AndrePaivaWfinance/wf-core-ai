@@ -1,0 +1,56 @@
+# azure-pipeline.yml
+trigger:
+  branches:
+    include:
+      - main
+      - release/*
+
+variables:
+  registry: 'meshbrainregistry.azurecr.io'
+  imageName: 'meshfull'
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: 'Build and Push Image'
+  jobs:
+  - job: Build
+    displayName: 'Build Docker Image'
+    steps:
+    - task: Docker@2
+      displayName: 'Build Docker image'
+      inputs:
+        command: build
+        dockerfile: 'Dockerfile'
+        tags: |
+          $(tag)
+          latest
+        arguments: '--pull'
+
+    - task: Docker@2
+      displayName: 'Push Docker image'
+      inputs:
+        command: push
+        repository: $(imageName)
+        tags: |
+          $(tag)
+          latest
+        containerRegistry: 'meshbrain-registry-service-connection'
+
+- stage: Deploy
+  displayName: 'Deploy to Kubernetes'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Deploy
+    steps:
+    - task: KubernetesManifest@0
+      displayName: 'Deploy to Kubernetes'
+      inputs:
+        action: 'deploy'
+        namespace: 'meshbot'
+        manifests: |
+          deployment.yml
+        imagePullSecrets: |
+          meshbrain-registry-secret
+        containers: '$(registry)/$(imageName):$(tag)'

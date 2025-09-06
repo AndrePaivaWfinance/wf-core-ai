@@ -1,8 +1,8 @@
 // src/server/createServer.js
-const restify = require('restify');
-const logger = require('../utils/logger');
+import restify from 'restify';
+import logger from '../utils/logger.js';
 
-function createServer(adapter, meshBot) {
+export function createServer(adapter, meshBot) {
   const server = restify.createServer({
     name: 'MESH Platform',
     version: '2.0.0',
@@ -29,7 +29,7 @@ function createServer(adapter, meshBot) {
     next();
   });
 
-  // Security headers
+  // Security headers manualmente para Restify
   server.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
@@ -48,7 +48,7 @@ function createServer(adapter, meshBot) {
     requestBodyOnGet: false
   }));
 
-  // Health check - FUNÇÃO REGULAR (não async) com next
+  // Health check - FUNÇÃO REGULAR com next
   server.get('/healthz', (req, res, next) => {
     const healthCheck = {
       status: 'OK',
@@ -62,7 +62,7 @@ function createServer(adapter, meshBot) {
     res.send(200, healthCheck);
     return next();
   });
-
+  
   // API status endpoint - FUNÇÃO REGULAR com next
   server.get('/status', (req, res, next) => {
     res.send(200, {
@@ -76,7 +76,7 @@ function createServer(adapter, meshBot) {
     });
     return next();
   });
-
+  
   // Bot messages endpoint - FUNÇÃO ASYNC sem next
   server.post('/api/messages', async (req, res) => {
     try {
@@ -145,5 +145,3 @@ function createServer(adapter, meshBot) {
 
   return server;
 }
-
-module.exports = { createServer };
