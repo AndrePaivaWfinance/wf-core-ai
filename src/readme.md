@@ -157,27 +157,6 @@ npm run debug
 
 ## 🔧 Configuração
 
-### **Variáveis de Ambiente**
-```bash
-# Bot Framework
-MICROSOFT_APP_ID=your-app-id
-MICROSOFT_APP_PASSWORD=your-app-password
-
-# Azure OpenAI
-AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_API_KEY=your-key
-AZURE_OPENAI_DEPLOYMENT=gpt-4o
-
-# Monitoring
-APPLICATIONINSIGHTS_CONNECTION_STRING=your-connection-string
-```
-
-### **Desenvolvimento Local**
-1. Copie `.env.example` para `.env`
-2. Configure suas credenciais
-3. Execute `npm run dev`
-4. Use ngrok para Teams testing
-
 ## 🚢 Deploy
 
 ### **Docker**
