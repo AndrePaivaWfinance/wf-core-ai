@@ -13,3 +13,4 @@ credentials/
 # Logs
 logs/
 *.log
+node_modules/*
