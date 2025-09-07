@@ -1,49 +1,31 @@
-# ================================================
-# DOCKERFILE ULTRA SIMPLES - MESH BOT
-# ================================================
-
+# Dockerfile Simplificado - MESH Platform
 FROM node:20-alpine
 
-# Instalar curl para health check
+# Instalar dependências básicas
 RUN apk add --no-cache curl
 
+# Criar diretório da aplicação
 WORKDIR /app
 
 # Copiar package.json
 COPY package*.json ./
 
 # Instalar dependências
-RUN npm install && npm cache clean --force
+RUN npm install --production && npm cache clean --force
 
 # Copiar código
-COPY . .
+COPY src/ ./src/
 
-# Criar src/index.js se não existir
-RUN if [ ! -f src/index.js ]; then \
-    mkdir -p src && \
-    echo "console.log('MESH Platform rodando...'); \
-const http = require('http'); \
-const server = http.createServer((req, res) => { \
-  if (req.url === '/healthz') { \
-    res.writeHead(200, {'Content-Type': 'application/json'}); \
-    res.end(JSON.stringify({status: 'ok', timestamp: new Date()})); \
-  } else { \
-    res.writeHead(404); res.end('Not Found'); \
-  } \
-}); \
-server.listen(process.env.PORT || 3978, () => console.log('Servidor rodando na porta', process.env.PORT || 3978));" > src/index.js; \
-fi
-
-# Configuração
+# Configurações
 ENV NODE_ENV=production
 ENV PORT=3978
 
-# Porta
+# Expor porta
 EXPOSE 3978
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl -f http://localhost:$PORT/healthz || exit 1
 
-# Comando
+# Comando de inicialização
 CMD ["node", "src/index.js"]
